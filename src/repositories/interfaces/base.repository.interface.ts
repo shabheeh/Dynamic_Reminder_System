@@ -3,4 +3,5 @@ export interface IBaseRepository<T, CreateDto, UpdateDto> {
   findById(id: string): Promise<T | null>;
   findAll(): Promise<T[]>;
   update(id: string, data: UpdateDto): Promise<T>;
+  delete(id: string): Promise<void>;
 }

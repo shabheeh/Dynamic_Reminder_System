@@ -10,6 +10,7 @@ export abstract class BaseRepository<T, CreateDto, UpdateDto>
     findUnique: (args: { where: { id: string } }) => Promise<T | null>;
     findMany: (args?: { orderBy?: { createdAt: 'desc' | 'asc' } }) => Promise<T[]>;
     update: (args: { where: { id: string }; data: UpdateDto }) => Promise<T>;
+    delete: (args: { where: { id: string } }) => Promise<T>;
   };
 
   async create(data: CreateDto): Promise<T> {
@@ -34,6 +35,12 @@ export abstract class BaseRepository<T, CreateDto, UpdateDto>
     return await this.model.update({
       where: { id },
       data,
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.model.delete({
+      where: { id },
     });
   }
 }
