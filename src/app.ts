@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import { config } from "./configs/environment";
 import httpLogger from "./middlewares/httpLogger";
 import { errorHandler } from "./middlewares/errorHandler";
+import { taskRouter } from "./routes/task.routes";
 
 const app = express();
 
@@ -36,6 +37,8 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
+
+app.use("/api/tasks", taskRouter)
 
 app.use(errorHandler)
 

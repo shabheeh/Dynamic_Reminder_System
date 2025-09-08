@@ -1,59 +1,38 @@
-
 import logger from "@/configs/logger";
 import { NextFunction, Request, Response } from "express";
-
-
-interface CustomError extends Error {
-    status: number;
-    code?: number;
-}
-
+import { AppError } from "@/utils/error";
 
 export const errorHandler = (
-  error: CustomError, 
-  req: Request, 
-  res: Response, 
+  error: Error | AppError,
+  req: Request,
+  res: Response,
   next: NextFunction
 ): void => {
-  logger.error('Unhandled error:', {
+  const status = error instanceof AppError ? error.status : 500;
+  const message =
+    process.env.NODE_ENV === "development"
+      ? error.message || "Internal server error"
+      : "Internal server error";
+
+  logger.error("Unhandled error:", {
     message: error.message,
     stack: error.stack,
     url: req.url,
     method: req.method,
-    ip: req.ip
+    ip: req.ip,
   });
 
-  let status = error.status || 500;
-  let message = 'Internal server error';
-
-  if (error.name === 'ValidationError') {
-    status = 400;
-    message = 'Validation error';
-  } else if (error.name === 'CastError') {
-    status = 400;
-    message = 'Invalid ID format';
-  } else if (error.code === 11000) {
-    status = 409;
-    message = 'Duplicate entry';
-  } else if (process.env.NODE_ENV === 'development') {
-    message = error.message;
-  }
-
-  const response = {
+  res.status(status).json({
     success: false,
     error: message,
-    timestamp: new Date().toISOString()
-  };
-
-  res.status(status).json(response);
+    timestamp: new Date().toISOString(),
+  });
 };
 
 export const notFoundHandler = (req: Request, res: Response): void => {
-  const response = {
+  res.status(404).json({
     success: false,
     error: `Route ${req.method} ${req.path} not found`,
-    timestamp: new Date().toISOString()
-  };
-
-  res.status(404).json(response);
+    timestamp: new Date().toISOString(),
+  });
 };
