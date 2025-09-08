@@ -1,4 +1,5 @@
 import app from "./app";
+import { Database } from "./configs/database";
 import { config } from "./configs/environment";
 import logger from "./configs/logger";
 
@@ -14,6 +15,8 @@ class Server {
 
         server.close(async () => {
           try {
+            await Database.disconnect();
+            logger.info("Database disconnected");
             logger.info("Shudown completed");
             process.exit(0);
           } catch (error) {

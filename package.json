@@ -2,14 +2,15 @@
   "name": "dynamic_reminder_system",
   "version": "1.0.0",
   "description": "Dynamic Reminder System with Audit logs",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/server.ts",
     "build": "tsc",
     "start": "node -r tsconfig-paths/register dist/server.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --write \"src/**/*.{ts,js,json}\""
+    "format": "prettier --write \"src/**/*.{ts,js,json}\"",
+    "db:generate": "prisma generate"
   },
   "author": "shabeeh",
   "license": "ISC",

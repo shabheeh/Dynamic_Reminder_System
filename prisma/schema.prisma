@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  dueDate     DateTime?
+  priority    Priority   @default(MEDIUM)
+  status      TaskStatus @default(PENDING)
+  assigneeId  String?
+  assignee    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("tasks")
+}
+
+model ReminderRule {
+  id               String         @id @default(cuid())
+  name             String
+  description      String?
+  conditionType    ConditionType
+  conditionValue   Json
+  reminderMessage  String
+  isActive         Boolean        @default(true)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  auditLogs        AuditLog[]
+
+  @@map("reminder_rules")
+}
+
+model AuditLog {
+  id             String        @id @default(cuid())
+  entityType     EntityType
+  entityId       String?
+  action         AuditAction
+  details        Json?
+  reminderRuleId String?
+  reminderRule   ReminderRule? @relation(fields: [reminderRuleId], references: [id])
+  createdAt      DateTime      @default(now())
+
+  @@map("audit_logs")
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ConditionType {
+  DUE_DATE_APPROACHING
+  OVERDUE
+  PRIORITY_BASED
+  STATUS_BASED
+}
+
+enum EntityType {
+  TASK
+  REMINDER_RULE
+  REMINDER_EXECUTION
+}
+
+enum AuditAction {
+  CREATED
+  UPDATED
+  DELETED
+  ACTIVATED
+  DEACTIVATED
+  REMINDER_SENT
+}
