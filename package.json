@@ -21,8 +21,10 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.1.0",
     "helmet": "^8.1.0",
+    "inversify": "^7.9.1",
     "morgan": "^1.10.1",
     "node-cron": "^4.2.1",
+    "reflect-metadata": "^0.2.2",
     "tsconfig-paths": "^4.2.0",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
