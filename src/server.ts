@@ -21,6 +21,8 @@ class Server {
       const gracefulShutdown = (signal: string) => {
         logger.info(`${signal} received, server is shutting down`);
 
+        scheduler.stop();
+
         server.close(async () => {
           try {
             await Database.disconnect();

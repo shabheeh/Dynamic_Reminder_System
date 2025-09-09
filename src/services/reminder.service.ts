@@ -95,7 +95,7 @@ export class ReminderService implements IReminderService {
     logger.info(`Reminder sent for task ${task.id} using rule ${rule.id}`);
   }
 
-  private formatReminderMessage(template: string, task: any): string {
+  private formatReminderMessage(template: string, task: Task): string {
     return template
       .replace("{taskTitle}", task.title)
       .replace(

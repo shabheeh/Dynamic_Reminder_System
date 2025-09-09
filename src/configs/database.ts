@@ -6,7 +6,7 @@ export class Database {
   public static getInstance(): PrismaClient {
     if (!Database.instance) {
       Database.instance = new PrismaClient({
-        log: ['query', 'info', 'warn', 'error'],
+        log: [ "info", 'warn', 'error'],
       });
     }
     return Database.instance;
