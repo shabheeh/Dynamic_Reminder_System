@@ -5,6 +5,7 @@ import { ITaskRepository } from "@/repositories/interfaces/task.repository.inter
 import { CreateTaskDto, TaskResponse, UpdateTaskDto } from "@/types/task.types";
 import logger from "@/configs/logger";
 import { AppError } from "@/utils/error";
+import { PaginatedResult, PaginationOptions } from "@/types/pagination.types";
 
 @injectable()
 export class TaskService implements ITaskService {
@@ -34,9 +35,9 @@ export class TaskService implements ITaskService {
     }
   }
 
-  async getAllTasks(): Promise<TaskResponse[]> {
+  async getAllTasks(options: PaginationOptions): Promise<PaginatedResult<TaskResponse>> {
     try {
-      return await this.taskRepository.findAll();
+      return await this.taskRepository.findAll(options);
     } catch (error) {
       logger.error("Error getting all tasks:", error);
       throw error;

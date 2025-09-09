@@ -23,8 +23,15 @@ export class TaskController extends BaseController implements ITaskController {
   };
 
   getAllTasks = async (req: Request, res: Response): Promise<void> => {
-    const tasks = await this.taskService.getAllTasks();
-    this.handleSuccess(res, { tasks, count: tasks.length });
+    const { page, limit } = req.query;
+
+    const pageNumber = page ? parseInt(page as string, 10) : 1;
+    const limitNumber = limit ? parseInt(limit as string, 10) : 100;
+    const result = await this.taskService.getAllTasks({
+      page: pageNumber,
+      limit: limitNumber,
+    });
+    this.handleSuccess(res, result);
   };
 
   updateTask = async (req: Request, res: Response): Promise<void> => {

@@ -15,7 +15,7 @@ export class ReminderRuleController
     @inject(TYPES.ReminderRuleService)
     private reminderRuleService: IReminderRuleService
   ) {
-    super()
+    super();
   }
 
   createRule = async (req: Request, res: Response): Promise<void> => {
@@ -24,20 +24,25 @@ export class ReminderRuleController
   };
 
   getAllRules = async (req: Request, res: Response): Promise<void> => {
-    const { active } = req.query;
+    const { active, page, limit } = req.query;
 
-    let rules;
+    const pageNumber = page ? parseInt(page as string, 10) : 1;
+    const limitNumber = limit ? parseInt(limit as string, 10) : 100;
+
+    let result;
     if (active === "true") {
-      rules = await this.reminderRuleService.getActiveRules();
+      result = await this.reminderRuleService.getActiveRules({
+        page: pageNumber,
+        limit: limitNumber,
+      });
     } else {
-      rules = await this.reminderRuleService.getAllRules();
+      result = await this.reminderRuleService.getAllRules({
+        page: pageNumber,
+        limit: limitNumber,
+      });
     }
 
-    this.handleSuccess(res, {
-      rules,
-      count: rules.length,
-      activeOnly: active === "true",
-    });
+    this.handleSuccess(res, result);
   };
 
   getRuleById = async (req: Request, res: Response): Promise<void> => {
@@ -71,7 +76,9 @@ export class ReminderRuleController
     this.handleSuccess(
       res,
       rule,
-      `Reminder rule ${rule.isActive ? "activated" : "deactivated"} successfully`
+      `Reminder rule ${
+        rule.isActive ? "activated" : "deactivated"
+      } successfully`
     );
   };
 }

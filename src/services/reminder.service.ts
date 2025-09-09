@@ -20,8 +20,8 @@ export class ReminderService implements IReminderService {
 
   async processReminders(): Promise<void> {
     try {
-      const activeRules = await this.reminderRuleRepository.findActive();
-      const tasks = await this.taskRepository.findAll();
+      const {data: activeRules} = await this.reminderRuleRepository.findActive({page: 1, limit: 1000});
+      const { data: tasks } = await this.taskRepository.findAll({page: 1, limit: 1000});
 
       for (const rule of activeRules) {
         const matchingTasks = this.evaluateRule(rule, tasks);

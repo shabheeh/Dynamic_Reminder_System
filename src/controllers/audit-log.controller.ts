@@ -17,15 +17,23 @@ export class AuditLogController
   }
 
   getReminderRulesLogs = async (req: Request, res: Response): Promise<void> => {
-    const auditLogs = await this.auditLogService.findReminderRules();
-    this.handleSuccess(res, { auditLogs, count: auditLogs.length });
+    const { page, limit } = req.query;
+
+    const pageNumber = page ? parseInt(page as string, 10) : 1;
+    const limitNumber = limit ? parseInt(limit as string, 10) : 100;
+    const result = await this.auditLogService.findReminderRules({page: pageNumber, limit: limitNumber});
+    this.handleSuccess(res, result);
   };
 
   getReminderExecutionsLogs = async (
     req: Request,
     res: Response
   ): Promise<void> => {
-    const auditLogs = await this.auditLogService.findReminderExecutions();
-    this.handleSuccess(res, { auditLogs, count: auditLogs.length });
+    const { page, limit } = req.query;
+
+    const pageNumber = page ? parseInt(page as string, 10) : 1;
+    const limitNumber = limit ? parseInt(limit as string, 10) : 100;
+    const result = await this.auditLogService.findReminderExecutions({page: pageNumber, limit: limitNumber});
+    this.handleSuccess(res, result);
   };
 }

@@ -11,6 +11,7 @@ import { EntityType, ReminderRule } from "@prisma/client";
 import logger from "@/configs/logger";
 import { AppError } from "@/utils/error";
 import { IAuditLogRepository } from "@/repositories/interfaces/audit-log.repository.interface";
+import { PaginatedResult, PaginationOptions } from "@/types/pagination.types";
 
 @injectable()
 export class ReminderRuleService implements IReminderRuleService {
@@ -60,19 +61,18 @@ export class ReminderRuleService implements IReminderRuleService {
     }
   }
 
-  async getAllRules(): Promise<ReminderRuleResponse[]> {
+  async getAllRules(options: PaginationOptions): Promise<PaginatedResult<ReminderRuleResponse>> {
     try {
-      const rules = await this.reminderRuleRepository.findAll();
-      return rules;
+      return await this.reminderRuleRepository.findAll(options);
     } catch (error) {
       logger.error("Error getting all reminder rules:", error);
       throw error;
     }
   }
 
-  async getActiveRules(): Promise<ReminderRuleResponse[]> {
+  async getActiveRules(options: PaginationOptions): Promise<PaginatedResult<ReminderRuleResponse>> {
     try {
-      const rules = await this.reminderRuleRepository.findActive();
+      const rules = await this.reminderRuleRepository.findActive(options);
       return rules;
     } catch (error) {
       logger.error("Error getting active reminder rules:", error);

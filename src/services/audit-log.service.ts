@@ -6,6 +6,7 @@ import { IAuditLogRepository } from "@/repositories/interfaces/audit-log.reposit
 import { EntityType } from "@prisma/client";
 import { AppError } from "@/utils/error";
 import logger from "@/configs/logger";
+import { PaginatedResult, PaginationOptions } from "@/types/pagination.types";
 
 @injectable()
 export class AuditLogService implements IAuditLogService {
@@ -14,9 +15,9 @@ export class AuditLogService implements IAuditLogService {
         @inject(TYPES.AuditLogRepository) private auditLogRepository: IAuditLogRepository
     ) {}
 
-    async findReminderRules(): Promise<AuditLogResponse[]> {
+    async findReminderRules(options: PaginationOptions): Promise<PaginatedResult<AuditLogResponse>> {
         try {
-            return await this.auditLogRepository.findByEntity(EntityType.REMINDER_RULE);
+            return await this.auditLogRepository.findByEntity(EntityType.REMINDER_RULE, options);
             
 
         } catch (error) {
@@ -25,9 +26,9 @@ export class AuditLogService implements IAuditLogService {
         }
     }
 
-    async findReminderExecutions(): Promise<AuditLogResponse[]> {
+    async findReminderExecutions(options: PaginationOptions): Promise<PaginatedResult<AuditLogResponse>> {
         try {
-            return await this.auditLogRepository.findByEntity(EntityType.REMINDER_EXECUTION);
+            return await this.auditLogRepository.findByEntity(EntityType.REMINDER_EXECUTION, options);
            
         } catch (error) {
             logger.error("Error getting Audit logs of reminder executions", error)
