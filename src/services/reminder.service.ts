@@ -6,19 +6,22 @@ import { IReminderRuleRepository } from "@/repositories/interfaces/reminder-rule
 import { ConditionType, ReminderRule, Task, TaskStatus } from "@prisma/client";
 import logger from "@/configs/logger";
 import { prisma } from "@/configs/database";
+import { IAuditLogRepository } from "@/repositories/interfaces/audit-log.repository.interface";
 
 @injectable()
 export class ReminderService implements IReminderService {
   constructor(
     @inject(TYPES.TaskRepository) private taskRepository: ITaskRepository,
     @inject(TYPES.ReminderRuleRepository)
-    private reminderRuleRepository: IReminderRuleRepository
+    private reminderRuleRepository: IReminderRuleRepository,
+    @inject(TYPES.AuditLogRepository)
+    private auditLogRepository: IAuditLogRepository
   ) {}
 
   async processReminders(): Promise<void> {
     try {
-      const activeRules = await this.reminderRuleRepository.findActive();
-      const tasks = await this.taskRepository.findAll();
+      const {data: activeRules} = await this.reminderRuleRepository.findActive({page: 1, limit: 1000});
+      const { data: tasks } = await this.taskRepository.findAll({page: 1, limit: 1000});
 
       for (const rule of activeRules) {
         const matchingTasks = this.evaluateRule(rule, tasks);
@@ -109,7 +112,7 @@ export class ReminderService implements IReminderService {
     return targetStatuses.includes(task.status);
   }
 
-  private async sendReminder(rule: any, task: any): Promise<void> {
+  private async sendReminder(rule: ReminderRule, task: Task): Promise<void> {
     const reminderMessage = this.formatReminderMessage(
       rule.reminderMessage,
       task
@@ -128,6 +131,19 @@ export class ReminderService implements IReminderService {
     console.log(`Message: ${reminderMessage}`);
     console.log(`Timestamp: ${new Date().toISOString()}`);
     console.log("====================");
+
+    await this.auditLogRepository.create({
+      entityType: "REMINDER_EXECUTION",
+      entityId: task.id,
+      action: "REMINDER_SENT",
+      reminderRuleId: rule.id,
+      details: {
+        ruleName: rule.name,
+        taskTitle: task.title,
+        message: reminderMessage,
+        taskDetails: task,
+      },
+    });
 
     logger.info(`Reminder sent for task ${task.id} using rule ${rule.id}`);
   }

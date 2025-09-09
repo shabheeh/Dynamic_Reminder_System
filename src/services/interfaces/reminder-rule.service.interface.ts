@@ -1,12 +1,12 @@
-import { CreateReminderRuleDto, UpdateReminderRuleDto } from "@/types/reminder-rule.types";
-import { ReminderRule } from "@prisma/client";
+import { PaginatedResult, PaginationOptions } from "@/types/pagination.types";
+import { CreateReminderRuleDto, ReminderRuleResponse, UpdateReminderRuleDto } from "@/types/reminder-rule.types";
 
 export interface IReminderRuleService {
-  createRule(data: CreateReminderRuleDto): Promise<ReminderRule>;
-  getRuleById(id: string): Promise<ReminderRule>;
-  getAllRules(): Promise<ReminderRule[]>;
-  getActiveRules(): Promise<ReminderRule[]>;
-  updateRule(id: string, data: UpdateReminderRuleDto): Promise<ReminderRule>;
+  createRule(data: CreateReminderRuleDto): Promise<ReminderRuleResponse>;
+  getRuleById(id: string): Promise<ReminderRuleResponse>;
+  getAllRules(options: PaginationOptions): Promise<PaginatedResult<ReminderRuleResponse>>;
+  getActiveRules(options: PaginationOptions): Promise<PaginatedResult<ReminderRuleResponse>>;
+  updateRule(id: string, data: UpdateReminderRuleDto): Promise<ReminderRuleResponse>;
   deleteRule(id: string): Promise<void>;
-  toggleRuleStatus(id: string, isActive: boolean): Promise<ReminderRule>;
+  toggleRuleStatus(id: string, isActive: boolean): Promise<ReminderRuleResponse>;
 }

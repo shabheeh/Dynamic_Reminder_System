@@ -4,22 +4,42 @@ import { TYPES } from "@/types/inversify.types";
 import { IReminderRuleRepository } from "@/repositories/interfaces/reminder-rule.repository.interface";
 import {
   CreateReminderRuleDto,
+  ReminderRuleResponse,
   UpdateReminderRuleDto,
 } from "@/types/reminder-rule.types";
-import { ReminderRule } from "@prisma/client";
+import { EntityType, ReminderRule } from "@prisma/client";
 import logger from "@/configs/logger";
 import { AppError } from "@/utils/error";
+import { IAuditLogRepository } from "@/repositories/interfaces/audit-log.repository.interface";
+import { PaginatedResult, PaginationOptions } from "@/types/pagination.types";
 
 @injectable()
 export class ReminderRuleService implements IReminderRuleService {
   constructor(
     @inject(TYPES.ReminderRuleRepository)
-    private reminderRuleRepository: IReminderRuleRepository
+    private reminderRuleRepository: IReminderRuleRepository,
+    @inject(TYPES.AuditLogRepository)
+    private auditLogRepository: IAuditLogRepository
   ) {}
 
-  async createRule(data: CreateReminderRuleDto): Promise<ReminderRule> {
+  async createRule(data: CreateReminderRuleDto): Promise<ReminderRuleResponse> {
     try {
       const rule = await this.reminderRuleRepository.create(data);
+
+      await this.auditLogRepository.create({
+        entityType: "REMINDER_RULE",
+        entityId: rule.id,
+        action: "CREATED",
+        details: {
+          rule: {
+            name: rule.name,
+            conditionType: data.conditionType,
+            conditionValue: data.conditionValue,
+            reminderMessage: data.reminderMessage,
+          },
+        },
+      });
+
       logger.info(`Reminder rule created successfully: ${rule.id}`);
       return rule;
     } catch (error) {
@@ -28,7 +48,7 @@ export class ReminderRuleService implements IReminderRuleService {
     }
   }
 
-  async getRuleById(id: string): Promise<ReminderRule> {
+  async getRuleById(id: string): Promise<ReminderRuleResponse> {
     try {
       const rule = await this.reminderRuleRepository.findById(id);
       if (!rule) {
@@ -41,19 +61,18 @@ export class ReminderRuleService implements IReminderRuleService {
     }
   }
 
-  async getAllRules(): Promise<ReminderRule[]> {
+  async getAllRules(options: PaginationOptions): Promise<PaginatedResult<ReminderRuleResponse>> {
     try {
-      const rules = await this.reminderRuleRepository.findAll();
-      return rules;
+      return await this.reminderRuleRepository.findAll(options);
     } catch (error) {
       logger.error("Error getting all reminder rules:", error);
       throw error;
     }
   }
 
-  async getActiveRules(): Promise<ReminderRule[]> {
+  async getActiveRules(options: PaginationOptions): Promise<PaginatedResult<ReminderRuleResponse>> {
     try {
-      const rules = await this.reminderRuleRepository.findActive();
+      const rules = await this.reminderRuleRepository.findActive(options);
       return rules;
     } catch (error) {
       logger.error("Error getting active reminder rules:", error);
@@ -64,9 +83,27 @@ export class ReminderRuleService implements IReminderRuleService {
   async updateRule(
     id: string,
     data: UpdateReminderRuleDto
-  ): Promise<ReminderRule> {
+  ): Promise<ReminderRuleResponse> {
     try {
+      const existingRule = await this.getRuleById(id);
       const updatedRule = await this.reminderRuleRepository.update(id, data);
+
+      await this.auditLogRepository.create({
+        entityType: "REMINDER_RULE",
+        entityId: updatedRule.id,
+        action: "UPDATED",
+        details: {
+          previous: {
+            name: existingRule.name,
+            conditionType: existingRule.conditionType,
+            conditionValue: existingRule.conditionValue,
+            reminderMessage: existingRule.reminderMessage,
+            isActive: existingRule.isActive,
+          },
+          updated: updatedRule,
+        },
+      });
+
       logger.info("Reminder rule updated successfully");
       return updatedRule;
     } catch (error) {
@@ -77,10 +114,25 @@ export class ReminderRuleService implements IReminderRuleService {
 
   async deleteRule(id: string): Promise<void> {
     try {
+      const existingRule = await this.getRuleById(id);
       const deletedRule = await this.reminderRuleRepository.delete(id);
       if (!deletedRule) {
         throw new AppError("Failed to delete reminder rule");
       }
+      await this.auditLogRepository.create({
+        entityType: "REMINDER_RULE",
+        entityId: id,
+        action: "DELETED",
+        details: {
+          deletedRule: {
+            name: existingRule.name,
+            conditionType: existingRule.conditionType,
+            conditionValue: existingRule.conditionValue,
+            reminderMessage: existingRule.reminderMessage,
+            isActive: existingRule.isActive,
+          },
+        },
+      });
       logger.info("Reminder rule deleted successfully");
     } catch (error) {
       logger.error("Error deleting reminder rule", error);
@@ -88,16 +140,30 @@ export class ReminderRuleService implements IReminderRuleService {
     }
   }
 
-  async toggleRuleStatus(id: string, isActive: boolean): Promise<ReminderRule> {
+  async toggleRuleStatus(
+    id: string,
+    isActive: boolean
+  ): Promise<ReminderRuleResponse> {
     try {
+      const existingRule = await this.getRuleById(id);
       const rule = await this.reminderRuleRepository.updateStatus(id, isActive);
-      if (rule) {
-        logger.info(
-          `Reminder rule ${id} ${
-            rule.isActive ? "activated" : "deactivated"
-          } successfully`
-        );
-      }
+
+      logger.info(
+        `Reminder rule ${id} ${
+          rule.isActive ? "activated" : "deactivated"
+        } successfully`
+      );
+      await this.auditLogRepository.create({
+        entityType: "REMINDER_RULE",
+        entityId: rule.id,
+        action: isActive ? "ACTIVATED" : "DEACTIVATED",
+        details: {
+          previousStatus: existingRule.isActive,
+          newStatus: isActive,
+          ruleName: existingRule.name,
+        },
+      });
+
       return rule;
     } catch (error) {
       logger.error("Error toggling reminder rule status", error);

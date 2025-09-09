@@ -2,10 +2,10 @@ import { inject, injectable } from "inversify";
 import { ITaskService } from "./interfaces/task.service.interface";
 import { TYPES } from "@/types/inversify.types";
 import { ITaskRepository } from "@/repositories/interfaces/task.repository.interface";
-import { CreateTaskDto, UpdateTaskDto } from "@/types/task.types";
-import { Task } from "@prisma/client";
+import { CreateTaskDto, TaskResponse, UpdateTaskDto } from "@/types/task.types";
 import logger from "@/configs/logger";
 import { AppError } from "@/utils/error";
+import { PaginatedResult, PaginationOptions } from "@/types/pagination.types";
 
 @injectable()
 export class TaskService implements ITaskService {
@@ -13,7 +13,7 @@ export class TaskService implements ITaskService {
     @inject(TYPES.TaskRepository) private taskRepository: ITaskRepository
   ) {}
 
-  async createTask(data: CreateTaskDto): Promise<Task> {
+  async createTask(data: CreateTaskDto): Promise<TaskResponse> {
     try {
       const task = await this.taskRepository.create(data);
       logger.info(`Task created: ${task.title}`);
@@ -24,7 +24,7 @@ export class TaskService implements ITaskService {
     }
   }
 
-  async getTaskById(id: string): Promise<Task> {
+  async getTaskById(id: string): Promise<TaskResponse> {
     try {
       const task = await this.taskRepository.findById(id);
       if (!task) throw new AppError("Task creation failed", 500);
@@ -35,16 +35,16 @@ export class TaskService implements ITaskService {
     }
   }
 
-  async getAllTasks(): Promise<Task[]> {
+  async getAllTasks(options: PaginationOptions): Promise<PaginatedResult<TaskResponse>> {
     try {
-      return await this.taskRepository.findAll();
+      return await this.taskRepository.findAll(options);
     } catch (error) {
       logger.error("Error getting all tasks:", error);
       throw error;
     }
   }
 
-  async updateTask(id: string, data: UpdateTaskDto): Promise<Task> {
+  async updateTask(id: string, data: UpdateTaskDto): Promise<TaskResponse> {
     try {
       const updatedTask = await this.taskRepository.update(id, data);
       logger.info(`Task updated: ${id}`);
@@ -59,7 +59,7 @@ export class TaskService implements ITaskService {
     try {
       const deletedTask = await this.taskRepository.delete(id);
       if (!deletedTask) {
-        throw new AppError("Task failed to delete")
+        throw new AppError("Task failed to delete");
       }
       logger.info(`Task deleted: ${id}`);
     } catch (error) {

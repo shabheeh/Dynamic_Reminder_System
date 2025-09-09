@@ -4,6 +4,7 @@ import {
   CreateReminderRuleDto,
   UpdateReminderRuleDto,
 } from "@/types/reminder-rule.types";
+import { PaginatedResult, PaginationOptions } from "@/types/pagination.types";
 
 export interface IReminderRuleRepository
   extends IBaseRepository<
@@ -11,6 +12,6 @@ export interface IReminderRuleRepository
     CreateReminderRuleDto,
     UpdateReminderRuleDto
   > {
-  findActive(): Promise<ReminderRule[]>;
+  findActive(options: PaginationOptions): Promise<PaginatedResult<ReminderRule>>;
   updateStatus(id: string, isActive: boolean): Promise<ReminderRule>;
 }

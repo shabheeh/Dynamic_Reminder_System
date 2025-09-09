@@ -1,34 +1,43 @@
-import { CreateTaskDto, UpdateTaskDto } from "@/types/task.types";
-import { BaseRepository } from "./base.repository";
-import { ITaskRepository } from "./interfaces/task.repository.interface";
+import { injectable } from "inversify";
+import { IAuditLogRepository } from "./interfaces/audit-log.repository.interface";
 import { prisma } from "@/configs/database";
-import { Prisma, Task } from "@prisma/client";
+import { CreateAuditLogDto } from "@/types/audit-log.types";
+import { AuditLog, EntityType } from "@prisma/client";
 import { PaginatedResult, PaginationOptions } from "@/types/pagination.types";
 
-export class TaskRepository
-  extends BaseRepository<Task, CreateTaskDto, UpdateTaskDto>
-  implements ITaskRepository
-{
-  protected model = prisma.task;
+@injectable()
+export class AuditLogRepository implements IAuditLogRepository {
+  private model = prisma.auditLog;
 
-  async findByCondition(
-    condition: Prisma.TaskWhereInput,
+  async create(data: CreateAuditLogDto): Promise<AuditLog> {
+    return await this.model.create({
+      data,
+    });
+  }
+
+  async findByEntity(
+    entityType: EntityType,
     options: PaginationOptions = {}
-  ): Promise<PaginatedResult<Task>> {
+  ): Promise<PaginatedResult<AuditLog>> {
     const page = Math.max(options.page || 1, 1);
     const limit = Math.min(Math.max(options.limit || 10, 1), 100);
     const skip = (page - 1) * limit;
 
     const [data, totalItems] = await Promise.all([
       this.model.findMany({
-        where: condition,
-        orderBy: { createdAt: 'desc' },
+        where: {
+          entityType,
+        },
+        include: {
+          reminderRule: true,
+        },
+        orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
       this.model.count({
-        where: condition,
-      })
+        where: { entityType },
+      }),
     ]);
 
     const totalPages = Math.ceil(totalItems / limit);
