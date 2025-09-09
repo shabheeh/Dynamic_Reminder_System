@@ -4,6 +4,7 @@ import { TYPES } from "@/types/inversify.types";
 import { IReminderRuleRepository } from "@/repositories/interfaces/reminder-rule.repository.interface";
 import {
   CreateReminderRuleDto,
+  ReminderRuleResponse,
   UpdateReminderRuleDto,
 } from "@/types/reminder-rule.types";
 import { ReminderRule } from "@prisma/client";
@@ -17,7 +18,7 @@ export class ReminderRuleService implements IReminderRuleService {
     private reminderRuleRepository: IReminderRuleRepository
   ) {}
 
-  async createRule(data: CreateReminderRuleDto): Promise<ReminderRule> {
+  async createRule(data: CreateReminderRuleDto): Promise<ReminderRuleResponse> {
     try {
       const rule = await this.reminderRuleRepository.create(data);
       logger.info(`Reminder rule created successfully: ${rule.id}`);
@@ -28,7 +29,7 @@ export class ReminderRuleService implements IReminderRuleService {
     }
   }
 
-  async getRuleById(id: string): Promise<ReminderRule> {
+  async getRuleById(id: string): Promise<ReminderRuleResponse> {
     try {
       const rule = await this.reminderRuleRepository.findById(id);
       if (!rule) {
@@ -41,7 +42,7 @@ export class ReminderRuleService implements IReminderRuleService {
     }
   }
 
-  async getAllRules(): Promise<ReminderRule[]> {
+  async getAllRules(): Promise<ReminderRuleResponse[]> {
     try {
       const rules = await this.reminderRuleRepository.findAll();
       return rules;
@@ -51,7 +52,7 @@ export class ReminderRuleService implements IReminderRuleService {
     }
   }
 
-  async getActiveRules(): Promise<ReminderRule[]> {
+  async getActiveRules(): Promise<ReminderRuleResponse[]> {
     try {
       const rules = await this.reminderRuleRepository.findActive();
       return rules;
@@ -64,7 +65,7 @@ export class ReminderRuleService implements IReminderRuleService {
   async updateRule(
     id: string,
     data: UpdateReminderRuleDto
-  ): Promise<ReminderRule> {
+  ): Promise<ReminderRuleResponse> {
     try {
       const updatedRule = await this.reminderRuleRepository.update(id, data);
       logger.info("Reminder rule updated successfully");
@@ -88,7 +89,7 @@ export class ReminderRuleService implements IReminderRuleService {
     }
   }
 
-  async toggleRuleStatus(id: string, isActive: boolean): Promise<ReminderRule> {
+  async toggleRuleStatus(id: string, isActive: boolean): Promise<ReminderRuleResponse> {
     try {
       const rule = await this.reminderRuleRepository.updateStatus(id, isActive);
       if (rule) {
