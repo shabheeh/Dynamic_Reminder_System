@@ -5,6 +5,7 @@ import { ITaskRepository } from "@/repositories/interfaces/task.repository.inter
 import { IReminderRuleRepository } from "@/repositories/interfaces/reminder-rule.repository.interface";
 import { ConditionType, ReminderRule, Task, TaskStatus } from "@prisma/client";
 import logger from "@/configs/logger";
+import { prisma } from "@/configs/database";
 
 @injectable()
 export class ReminderService implements IReminderService {
@@ -23,11 +24,40 @@ export class ReminderService implements IReminderService {
         const matchingTasks = this.evaluateRule(rule, tasks);
 
         for (const task of matchingTasks) {
-          await this.sendReminder(rule, task);
+          const alreadySent = await this.hasReminderBeenSent(task.id, rule.id);
+
+          if (!alreadySent) {
+            await this.sendReminder(rule, task);
+          } else {
+            logger.debug(
+              `Skipping reminder for task ${task.id} (rule: ${rule.name}) - already sent`
+            );
+          }
         }
       }
     } catch (error) {
       logger.error("Error processing reminders:", error);
+    }
+  }
+
+  private async hasReminderBeenSent(
+    taskId: string,
+    ruleId: string
+  ): Promise<boolean> {
+    try {
+      const existingExecution = await prisma.reminderExecution.findUnique({
+        where: {
+          taskId_reminderRuleId: {
+            taskId,
+            reminderRuleId: ruleId,
+          },
+        },
+      });
+
+      return existingExecution !== null;
+    } catch (error) {
+      logger.error("Error checking reminder execution:", error);
+      return false;
     }
   }
 
@@ -84,6 +114,13 @@ export class ReminderService implements IReminderService {
       rule.reminderMessage,
       task
     );
+
+    await prisma.reminderExecution.create({
+      data: {
+        taskId: task.id,
+        reminderRuleId: rule.id,
+      },
+    });
 
     console.log("=== REMINDER SENT ===");
     console.log(`Rule: ${rule.name}`);

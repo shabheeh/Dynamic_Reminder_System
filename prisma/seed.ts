@@ -79,7 +79,7 @@ async function main() {
     prisma.reminderRule.create({
       data: {
         name: 'High Priority Tasks',
-        description: 'Daily reminder for high and critical priority tasks',
+        description: 'Reminder for high and critical priority tasks',
         conditionType: ConditionType.PRIORITY_BASED,
         conditionValue: { priorities: [Priority.HIGH, Priority.CRITICAL] },
         reminderMessage: 'High priority task "{taskTitle}" needs attention.',
