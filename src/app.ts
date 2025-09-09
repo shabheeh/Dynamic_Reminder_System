@@ -6,6 +6,7 @@ import { config } from "./configs/environment";
 import httpLogger from "./middlewares/httpLogger";
 import { errorHandler } from "./middlewares/errorHandler";
 import { taskRouter } from "./routes/task.routes";
+import { reminderRuleRoutes } from "./routes/reminder-rule.routes";
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/tasks", taskRouter)
+app.use("/api/reminder-rules", reminderRuleRoutes);
 
 app.use(errorHandler)
 

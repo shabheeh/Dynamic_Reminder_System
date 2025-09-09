@@ -4,7 +4,6 @@ import { BaseController } from "./base/base.controller";
 import { TYPES } from "@/types/inversify.types";
 import { ITaskService } from "@/services/interfaces/task.service.interface";
 import { ITaskController } from "./interfaces/task.controller.interface";
-import logger from "@/configs/logger";
 
 @injectable()
 export class TaskController extends BaseController implements ITaskController {
