@@ -21,6 +21,7 @@ export const errorHandler = (
     method: req.method,
     ip: req.ip,
   });
+  
 
   res.status(status).json({
     success: false,

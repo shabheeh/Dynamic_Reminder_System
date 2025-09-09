@@ -38,8 +38,8 @@ export abstract class BaseRepository<T, CreateDto, UpdateDto>
     });
   }
 
-  async delete(id: string): Promise<void> {
-    await this.model.delete({
+  async delete(id: string): Promise<T> {
+    return await this.model.delete({
       where: { id },
     });
   }

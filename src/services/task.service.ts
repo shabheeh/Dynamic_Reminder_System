@@ -57,8 +57,10 @@ export class TaskService implements ITaskService {
 
   async deleteTask(id: string): Promise<void> {
     try {
-      await this.taskRepository.delete(id);
-
+      const deletedTask = await this.taskRepository.delete(id);
+      if (!deletedTask) {
+        throw new AppError("Task failed to delete")
+      }
       logger.info(`Task deleted: ${id}`);
     } catch (error) {
       logger.error(`Error deleting task ${id}:`, error);
