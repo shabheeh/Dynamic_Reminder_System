@@ -1,4 +1,9 @@
-import { ReminderRule, ConditionType } from '@prisma/client';
+import {
+  ReminderRule,
+  ConditionType,
+  Priority,
+  TaskStatus,
+} from "@prisma/client";
 
 export interface CreateReminderRuleDto {
   name: string;
@@ -10,6 +15,12 @@ export interface CreateReminderRuleDto {
 
 export interface UpdateReminderRuleDto extends Partial<CreateReminderRuleDto> {
   isActive?: boolean;
+}
+
+export interface conditionValue {
+  daysBefore?: number;
+  priorities?: Priority[];
+  statuses?: TaskStatus[];
 }
 
 export type ReminderRuleResponse = ReminderRule;
