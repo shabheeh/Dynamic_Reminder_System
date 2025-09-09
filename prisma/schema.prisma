@@ -8,32 +8,48 @@ datasource db {
 }
 
 model Task {
-  id          String     @id @default(cuid())
-  title       String
-  description String?
-  dueDate     DateTime?
-  priority    Priority   @default(MEDIUM)
-  status      TaskStatus @default(PENDING)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id                  String               @id @default(cuid())
+  title               String
+  description         String?
+  dueDate             DateTime?
+  priority            Priority             @default(MEDIUM)
+  status              TaskStatus           @default(PENDING)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  reminderExecutions  ReminderExecution[]
 
   @@map("tasks")
 }
 
 model ReminderRule {
-  id               String         @id @default(cuid())
-  name             String
-  description      String?
-  conditionType    ConditionType
-  conditionValue   Json
-  reminderMessage  String
-  isActive         Boolean        @default(true)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  auditLogs        AuditLog[]
+  id                  String              @id @default(cuid())
+  name                String
+  description         String?
+  conditionType       ConditionType
+  conditionValue      Json
+  reminderMessage     String
+  isActive            Boolean             @default(true)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  auditLogs           AuditLog[]
+  reminderExecutions  ReminderExecution[]
 
   @@map("reminder_rules")
 }
+
+model ReminderExecution {
+  id             String       @id @default(cuid())
+  taskId         String
+  reminderRuleId String
+  executedAt     DateTime     @default(now())
+  
+  task           Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  reminderRule   ReminderRule @relation(fields: [reminderRuleId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, reminderRuleId])
+  @@map("reminder_executions")
+}
+
 
 model AuditLog {
   id             String        @id @default(cuid())

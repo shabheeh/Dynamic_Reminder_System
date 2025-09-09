@@ -10,7 +10,10 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",
-    "db:generate": "prisma generate"
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "ts-node-dev --transpile-only prisma/seed.ts",
+    "db:generate": "prisma generate",
+    "db:reset": "prisma migrate reset"
   },
   "author": "shabeeh",
   "license": "ISC",

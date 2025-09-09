@@ -1,17 +1,27 @@
 import app from "./app";
 import { Database } from "./configs/database";
 import { config } from "./configs/environment";
+import { container } from "./configs/inversify.config";
 import logger from "./configs/logger";
+import { ReminderScheduler } from "./schedulers/reminder.scheduler";
+import { TYPES } from "./types/inversify.types";
 
 class Server {
   async start(): Promise<void> {
     try {
+
+      const scheduler = container.get<ReminderScheduler>(TYPES.ReminderScheduler);
+
       const server = app.listen(config.PORT, () => {
         logger.info(`Server successfully running on port: ${config.PORT}`);
+
+        scheduler.start();
       });
 
       const gracefulShutdown = (signal: string) => {
         logger.info(`${signal} received, server is shutting down`);
+
+        scheduler.stop();
 
         server.close(async () => {
           try {

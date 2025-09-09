@@ -10,7 +10,7 @@ const taskController = container.get<ITaskController>(TYPES.TaskController);
 router.post("/", taskController.createTask);
 router.get("/", taskController.getAllTasks);
 router.get('/:id', taskController.getTaskById);
-router.post('/:id', taskController.updateTask);
+router.put('/:id', taskController.updateTask);
 router.delete('/:id', taskController.deleteTask)
 
 
